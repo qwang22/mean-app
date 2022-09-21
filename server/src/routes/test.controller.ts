@@ -1,10 +1,14 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import TestService from '../services/test.service';
+import { DbService } from '../services/db.service';
 
 export default class TestController {
   protected router: Router;
+  protected service: TestService;
 
-  constructor() { 
+  constructor(db: DbService) { 
     this.router = this.createRouter();
+    this.service = new TestService(db)
   }
 
   public createRouter = (): Router => {
@@ -19,6 +23,7 @@ export default class TestController {
   }
 
   protected get = async (req: Request, res: Response | any, next: NextFunction) => {
-    await res.send('Test GET works');
+    const response = await this.service.test();
+    await res.status(200).send(response);
   }
 }

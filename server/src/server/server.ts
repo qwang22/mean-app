@@ -2,7 +2,6 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import TestController from '../routes/test.controller';
-import ApolloController from '../routes/apollo.controller';
 import { DbService } from '../services/db.service';
 
 class Server {
@@ -27,10 +26,8 @@ class Server {
       this.app.use(express.urlencoded({ extended: true }));
       this.app.use(cors());
   
-      const testRoutes = new TestController().getRoutes();
-      const apolloRoutes = new ApolloController().getRoutes();
+      const testRoutes = new TestController(this.dbService).getRoutes();
       this.app.use(testRoutes);
-      this.app.use(apolloRoutes);
   
       const server = this.app.listen(port, () => {
         this.dbConnect().then(

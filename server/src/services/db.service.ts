@@ -1,10 +1,9 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import { dbConnection } from '../config/db.connection';
-import * as fs from 'fs';
-import * as path from 'path';
+import bindModels from '../lib/model-binder';
 
 export class DbService {
-  private db: any;
+  private db: mongoose.Connection;
   private readonly dbConn: any = null;
 
   constructor(dbConn: any = dbConnection) {
@@ -17,7 +16,7 @@ export class DbService {
         mongoose.connect(this.dbConn.dbUrl as string, this.dbConn.options as mongoose.ConnectOptions).then(
           (_success) => {
             this.db = mongoose.connection;
-            const entities = this.bindModels();
+            const entities = bindModels();
             console.info(`Discovered the following schema entities ${entities}`);
             resolve(JSON.stringify(this.dbConn));
           },
@@ -32,20 +31,11 @@ export class DbService {
     });
   }
 
-  close() {
+  close(): Promise<void> {
     if (this.db) return this.db.close();
   }
 
-  bindModels(): string[] {
-    const pathToModels = path.join(__dirname, '..', 'models');
-    let files: string[] = [];
-    try {
-      files = fs.readdirSync(pathToModels).filter(file => (file.indexOf('.') !== 0 && file.slice(-3) === '.ts'))
-        .map(file => { return file });
-    } catch(err) {
-      console.error('error', `unable to bind models ${err}`);
-    }
-
-    return files;
+  getAll = async () => {
+    return this.db.models.Test.find({});
   }
 }

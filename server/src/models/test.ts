@@ -1,13 +1,16 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 const subDoc = new mongoose.Schema<any>({
   name: { type: String }
-}, { timestamps: { createdAt: true, updatedAt: true }})
+}, { _id: false })
 
 const test = new mongoose.Schema<any>({
   name: { type: String, required: true },
   items: { type: [subDoc] }
-}, { _id: false });
+},
+{ collection: 'test',
+  timestamps: { createdAt: true, updatedAt: true }
+});
 
 test.statics.deleteById = function(_id) {
   return this.deleteOne({ _id });
