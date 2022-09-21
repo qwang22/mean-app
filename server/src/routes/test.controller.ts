@@ -24,6 +24,6 @@ export default class TestController {
 
   protected get = async (req: Request, res: Response | any, next: NextFunction) => {
     const response = await this.service.test();
-    await res.status(200).send(response);
+    res.status(200).send(response);
   }
 }

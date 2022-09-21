@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import morgan from 'morgan';
 import TestController from '../routes/test.controller';
 import { DbService } from '../services/db.service';
 
@@ -25,6 +26,11 @@ class Server {
       this.app.use(express.json());
       this.app.use(express.urlencoded({ extended: true }));
       this.app.use(cors());
+      this.app.use(morgan('dev'));
+
+      // custom middleware example
+      // this.app.use(function(req, res, next) {
+      // });
   
       const testRoutes = new TestController(this.dbService).getRoutes();
       this.app.use(testRoutes);
