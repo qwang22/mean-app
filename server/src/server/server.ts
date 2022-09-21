@@ -3,32 +3,64 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import TestController from '../routes/test.controller';
 import ApolloController from '../routes/apollo.controller';
+import { DbService } from '../services/db.service';
 
-// get environment vars
-dotenv.config();
+class Server {
+  private app: express.Express | any; // check on this
+  dbService: DbService;
 
-const start = (container) => {
-  return new Promise((resolve, reject) => {
-    const { port } = container.resolve('serverSettings');
+  constructor(dbService: DbService) {
+    this.dbService = dbService;
+    dotenv.config();
+  }
 
-    if (!port) {
-      reject(new Error('The server must be started with an available port'));
-    }
-
-    const app = express();
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
-    app.use(cors());
-
-    const testRoutes = new TestController().getRoutes();
-    const apolloRoutes = new ApolloController().getRoutes();
-    app.use(testRoutes);
-    app.use(apolloRoutes);
-
-    const server = app.listen(port, () => {
-      resolve(server);
+  public start = (container) => {
+    return new Promise((resolve, reject) => {
+      const { port } = container.resolve('serverSettings');
+  
+      if (!port) {
+        reject(new Error('The server must be started with an available port'));
+      }
+  
+      this.app = express();
+      this.app.use(express.json());
+      this.app.use(express.urlencoded({ extended: true }));
+      this.app.use(cors());
+  
+      const testRoutes = new TestController().getRoutes();
+      const apolloRoutes = new ApolloController().getRoutes();
+      this.app.use(testRoutes);
+      this.app.use(apolloRoutes);
+  
+      const server = this.app.listen(port, () => {
+        this.dbConnect().then(
+          (_success) => {
+            resolve(server);
+          },
+          (err) => {
+            reject(err)
+          }
+        );
+      });
     });
-  });
+  }
+
+  private dbConnect(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      console.info('Attemping to connect to database...');
+      this.dbService.connect().then(
+        (connectionInfo) => {
+          console.info(`Successfully connected to database: ${connectionInfo}`);
+          resolve(true);
+        },
+        (err) => {
+          console.error(`Error when connecting to database ${err}`);
+          reject(err)
+        }
+      );
+    });
+  }
+
 }
 
-export default Object.assign({}, { start });
+export { Server };

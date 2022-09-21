@@ -1,6 +1,7 @@
-import server from './server/server';
+import { Server } from './server/server';
 import di from './config';
 import { EventEmitter } from 'events';
+import { DbService } from './services/db.service';
 
 class Main {
   public mediator = new EventEmitter();
@@ -11,6 +12,7 @@ class Main {
     process.on('unhandledRejection', this.shutdown);
 
     this.mediator.on('di.ready', (container) => {
+      const server = new Server(new DbService());
       server.start(container).then(
         (app) => {
           this.server = app;
