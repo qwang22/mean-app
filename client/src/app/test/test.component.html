@@ -1,0 +1,10 @@
+<div class='container'>
+  <p>Test data here:</p>
+  <div *ngFor="let test of testData">
+    <p>Name: {{ test.name }}</p>
+    <p>Items: </p>
+    <div *ngFor="let item of test.items">
+      <p>Item Name: {{ item.name }}</p>
+    </div>
+  </div>
+</div>
