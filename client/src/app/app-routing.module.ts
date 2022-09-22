@@ -6,6 +6,19 @@ const routes: Routes = [
   {
     path: 'test',
     component: TestComponent
+  },
+  {
+    path: 'chat',
+    children: [
+      {
+        path: '',
+        loadChildren: () => import('./chat/chat.module').then(m => m.ChatModule)
+      }
+    ]
+  },
+  {
+    path: '**',
+    redirectTo: ''
   }
 ];
 
