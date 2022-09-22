@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import { Server as SocketServer } from 'socket.io';
 import TestController from '../routes/test.controller';
 import { DbService } from '../services/db.service';
+import ChatController from '../routes/chat.controller';
 
 class Server {
   private app: express.Express | any; // check on this
@@ -36,6 +37,9 @@ class Server {
   
       const testRoutes = new TestController(this.dbService).getRoutes();
       this.app.use(testRoutes);
+
+      const chatRoutes = new ChatController(this.dbService).getRoutes();
+      this.app.use(chatRoutes);
   
       const server = this.app.listen(port, () => {
         this.dbConnect().then(
@@ -77,21 +81,38 @@ class Server {
       }
     });
     io.sockets.on('connection', (socket) => {
-      console.log('SOCKET CONNECTION MADE')
-      socket.on('join', (data) => {
+
+      console.log('SOCKET CONNECTION MADE');
+
+      socket.on('join', async (data) => {
         socket.join(data.room);
         // check for current chatrooms in db & create 1 if none exist
-        console.log('joined, checking for rooms....')
+        console.log('joined, data received:', data)
+        console.log('checking for rooms....')
+        const chatrooms = await this.dbService.getChat();
+
+        if (!chatrooms?.length) {
+          console.log('no rooms found, creating.....')
+          const { roomName, user } = data;
+          const room = await this.dbService.createChat({ roomName, messages: [], participants: [{ user }]});
+          console.log('room created', room)
+        } else {
+          console.log(`${chatrooms.length} rooms found`);
+          console.log('room info:', chatrooms)
+
+        }
       });
       socket.on('message', (data) => {
+        console.log('message received:', data);
         io.in(data.room).emit('new message', { user: data.user, message: data.message });
         // update the active chat room's messages
-        console.log('message received, updating chat room')
       });
+
       socket.on('typing', (data) => {
-        console.log('TYPING EVENT RECEIVED')
+        console.log('TYPING EVENT RECEIVED:', data)
         socket.broadcast.in(data.room).emit('typing', {data: data, isTyping: true});
       });
+
     });
   }
 

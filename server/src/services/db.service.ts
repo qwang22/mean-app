@@ -38,4 +38,22 @@ export class DbService {
   getAll = async () => {
     return this.db.models.Test.find({});
   }
+
+  // Chat methods
+
+  getChat = async (_id?: string) => {
+    return this.db.models.Chat.find(_id ? { _id } : {});
+  }
+
+  createChat = async (chat) => {
+    return this.db.models.Chat.create(chat, { new: true });
+  }
+
+  updateChat = async (chat) => {
+    console.log('chat obj received', chat)
+    const match = { _id: chat._id };
+    const { user, message } = chat;
+    const messages = { messages: { user, message } };
+    return this.db.models.Chat.update(match, { $push: messages }, { new: true });
+  }
 }

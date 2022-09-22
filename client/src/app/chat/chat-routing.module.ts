@@ -4,7 +4,7 @@ import { ChatroomComponent } from './chatroom/chatroom.component';
 
 const routes: Routes = [
   {
-    path: 'chatroom',
+    path: ':id',
     component: ChatroomComponent
   }
 ]

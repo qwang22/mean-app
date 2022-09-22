@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { io } from 'socket.io-client';
@@ -9,7 +10,11 @@ export class ChatService {
 
   private socket = io('http://localhost:8080');
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
+
+  get(id: string): Observable<any> {
+    return this.http.get(id ? `/chat/${id}` : '/chat');
+  }
 
   joinRoom(data: any) {
     console.log('joinRoom', data)
