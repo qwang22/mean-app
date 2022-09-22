@@ -1,1 +1,10 @@
-<p>dropdown works!</p>
+<div>
+  <mat-label *ngIf='label' class='label' [class.required]='required'>{{ label }}</mat-label>
+  <mat-form-field appearance='outline'>
+    <mat-select [(ngModel)]='value' [placeholder]='placeholder' (selectionChange)='selectionChange($event.value)' [title]='value'>
+      <mat-option *ngFor='let option of options' [value]='option.value' [title]='option.label'>
+        {{ option.label }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
