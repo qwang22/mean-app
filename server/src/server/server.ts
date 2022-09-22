@@ -2,6 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import morgan from 'morgan';
+// const { Server } = require("socket.io");
+import { Server as SocketServer } from 'socket.io';
 import TestController from '../routes/test.controller';
 import { DbService } from '../services/db.service';
 
@@ -45,6 +47,8 @@ class Server {
           }
         );
       });
+
+      this.enableSockets(server);
     });
   }
 
@@ -61,6 +65,33 @@ class Server {
           reject(err)
         }
       );
+    });
+  }
+
+  // move to separate file
+  private enableSockets(server: any) {
+    const io = new SocketServer(server, {
+      cors: {
+        origin: 'http://localhost:4200',
+        methods: ['GET', 'POST']
+      }
+    });
+    io.sockets.on('connection', (socket) => {
+      console.log('SOCKET CONNECTION MADE')
+      socket.on('join', (data) => {
+        socket.join(data.room);
+        // check for current chatrooms in db & create 1 if none exist
+        console.log('joined, checking for rooms....')
+      });
+      socket.on('message', (data) => {
+        io.in(data.room).emit('new message', { user: data.user, message: data.message });
+        // update the active chat room's messages
+        console.log('message received, updating chat room')
+      });
+      socket.on('typing', (data) => {
+        console.log('TYPING EVENT RECEIVED')
+        socket.broadcast.in(data.room).emit('typing', {data: data, isTyping: true});
+      });
     });
   }
 
